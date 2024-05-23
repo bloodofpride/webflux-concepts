@@ -1,0 +1,4 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://maxwellponte1:<password>@webfluxconceptscluster.hkhjklo.mongodb.net/webflux-concepts?retryWrites=true&w=majority&appName=WebfluxConceptsCluster
