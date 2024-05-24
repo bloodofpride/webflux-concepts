@@ -1,5 +1,7 @@
 package br.com.maxwellponte.webfluxconcepts.controllers;
 
+import br.com.maxwellponte.webfluxconcepts.models.requests.UserRequest;
+import br.com.maxwellponte.webfluxconcepts.models.responses.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
