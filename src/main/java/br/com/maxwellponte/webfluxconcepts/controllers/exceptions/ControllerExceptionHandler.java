@@ -3,8 +3,10 @@ package br.com.maxwellponte.webfluxconcepts.controllers.exceptions;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,16 @@ public class ControllerExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity<Mono<ValidationError>> validationError(WebExchangeBindException ex, ServerHttpRequest request){
+        ValidationError error = new ValidationError(LocalDateTime.now(), request.getPath().toString(), BAD_REQUEST.value(), "Validation Errors", "Error on validation atributes");
+
+        for (FieldError fr : ex.getBindingResult().getFieldErrors()){
+            error.addError(fr.getField(), fr.getDefaultMessage());
+        }
+
+        return ResponseEntity.status(BAD_REQUEST).body(Mono.just(error));
+    }
     private String verifyDupKey(String message){
         if (message.contains("email dup key")){
             return "Email already registered";

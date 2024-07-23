@@ -1,7 +1,17 @@
 package br.com.maxwellponte.webfluxconcepts.models.requests;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public record UserRequest (
-    String name,
-    String email,
-    String password
+        @Size(min = 3, max = 50, message = "must be between 3 and 50 characters")
+        @NotBlank(message = "must not be null or empty")
+        String name,
+        @Email(message = "invalid email")
+        @NotBlank(message = "must not be null or empty")
+        String email,
+        @Size(min = 3, max = 50, message = "must be between 3 and 50 characters")
+        @NotBlank(message = "must not be null or empty")
+        String password
 ) { }
