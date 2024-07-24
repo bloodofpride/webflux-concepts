@@ -1,6 +1,7 @@
 package br.com.maxwellponte.webfluxconcepts.controllers.impl;
 
 import br.com.maxwellponte.webfluxconcepts.controllers.UserController;
+import br.com.maxwellponte.webfluxconcepts.mappers.UserMapper;
 import br.com.maxwellponte.webfluxconcepts.models.requests.UserRequest;
 import br.com.maxwellponte.webfluxconcepts.models.responses.UserResponse;
 import br.com.maxwellponte.webfluxconcepts.services.UserService;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 public class UserControllerImpl implements UserController {
 
     private final UserService service;
+    private final UserMapper mapper;
 
     @Override
     public ResponseEntity<Mono<Void>> save(final UserRequest request) {
@@ -27,7 +29,8 @@ public class UserControllerImpl implements UserController {
 
     @Override
     public ResponseEntity<Mono<UserResponse>> findById(String id) {
-        return null;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findById(id).map(mapper::toResponse));
     }
 
     @Override

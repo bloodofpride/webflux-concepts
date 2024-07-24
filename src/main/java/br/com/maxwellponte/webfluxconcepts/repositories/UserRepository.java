@@ -14,7 +14,11 @@ public class UserRepository {
     @Autowired
     private final ReactiveMongoTemplate template;
 
-    public Mono<User> save(final User user){
+    public Mono<User> save(final User user) {
         return template.save(user);
+    }
+
+    public Mono<User> findById(String id) {
+        return template.findById(id, User.class);
     }
 }
