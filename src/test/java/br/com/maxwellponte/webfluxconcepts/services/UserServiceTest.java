@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -64,5 +65,19 @@ class UserServiceTest {
                 .verify();
 
         Mockito.verify(repository, times(1)).findById(anyString());
+    }
+
+    @Test
+    void testFindAll(){
+        when(repository.findAll()).thenReturn(Flux.just(User.builder().build()));
+
+        Flux<User> result = service.findAll();
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> user.getClass() == User.class)
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(repository, times(1)).findAll();
     }
 }
