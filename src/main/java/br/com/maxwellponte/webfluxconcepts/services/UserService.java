@@ -7,6 +7,7 @@ import br.com.maxwellponte.webfluxconcepts.repositories.UserRepository;
 import br.com.maxwellponte.webfluxconcepts.services.exceptions.ObjectNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -25,5 +26,16 @@ public class UserService {
                 .switchIfEmpty(Mono.error(
                         new ObjectNotFoundException(String.format("Object not Found. Id: %s, type: %s", id, User.class.getSimpleName()))
                 ));
+    }
+
+    public Flux<User> findAll() {
+        return repository.findAll();
+    }
+
+    public Mono<User> update(final String id, final UserRequest request) {
+        return findById(id)
+                .map(entity -> mapper.toEntity(request, entity))
+                .flatMap(repository::save);
+
     }
 }
