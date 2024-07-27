@@ -41,7 +41,7 @@ public class UserService {
     }
 
     private <T> Mono<T> handleNotFound(Mono<T> mono, String id){
-        return mono .switchIfEmpty(Mono.error(
+        return mono.switchIfEmpty(Mono.error(
                 new ObjectNotFoundException(String.format("Object not Found. Id: %s, type: %s", id, User.class.getSimpleName()))
         ));
     }
