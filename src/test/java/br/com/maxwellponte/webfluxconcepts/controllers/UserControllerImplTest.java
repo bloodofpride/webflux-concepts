@@ -141,7 +141,27 @@ class UserControllerImplTest {
     }
 
     @Test
-    void update() {
+    @DisplayName("Test endpoint update with success")
+    void testUpdateWithSuccess() {
+        UserRequest userRequest = new UserRequest(NAME, EMAIL, PASSWORD);
+        UserResponse userResponse = new UserResponse(ID, NAME, EMAIL);
+
+        when(userService.update(anyString(), any(UserRequest.class))).thenReturn(Mono.just(User.builder().build()));
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        webTestClient.patch().uri("/users/"+ ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userRequest))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NAME)
+                .jsonPath("$.email").isEqualTo(EMAIL);
+
+        Mockito.verify(userService, times(1)).update(anyString(), any(UserRequest.class));
+        Mockito.verify(userMapper, times(1)).toResponse(any(User.class));
+
     }
 
     @Test
