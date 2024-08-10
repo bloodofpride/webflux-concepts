@@ -3,7 +3,9 @@ package br.com.maxwellponte.webfluxconcepts.controllers;
 import br.com.maxwellponte.webfluxconcepts.entities.User;
 import br.com.maxwellponte.webfluxconcepts.mappers.UserMapper;
 import br.com.maxwellponte.webfluxconcepts.models.requests.UserRequest;
+import br.com.maxwellponte.webfluxconcepts.models.responses.UserResponse;
 import br.com.maxwellponte.webfluxconcepts.services.UserService;
+import br.com.maxwellponte.webfluxconcepts.services.exceptions.ObjectNotFoundException;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,10 @@ import static org.mockito.Mockito.when;
 @AutoConfigureWebTestClient
 class UserControllerImplTest {
 
+    public static final String ID = "123456";
+    public static final String NAME = "Maxwell";
+    public static final String EMAIL = "maxwell@mail.com";
+    public static final String PASSWORD = "123";
     @Autowired
     private WebTestClient webTestClient;
 
@@ -44,7 +51,7 @@ class UserControllerImplTest {
     @Test
     @DisplayName("Test endpoint save with success")
     void testSaveWithSuccess() {
-        UserRequest userRequest = new UserRequest("Maxwell", "maxwell@mail.com", "123");
+        UserRequest userRequest = new UserRequest(NAME, EMAIL, PASSWORD);
 
         when(userService.save(any(UserRequest.class))).thenReturn(Mono.just(User.builder().build()));
 
@@ -60,7 +67,7 @@ class UserControllerImplTest {
     @Test
     @DisplayName("Test endpoint save with bad request")
     void testSaveWithBadRequest() {
-        UserRequest userRequest = new UserRequest(" Maxwell", "maxwell@mail.com", "123");
+        UserRequest userRequest = new UserRequest(NAME.concat(" "), EMAIL, PASSWORD);
 
         webTestClient.post().uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +86,37 @@ class UserControllerImplTest {
     }
 
     @Test
-    void findById() {
+    @DisplayName("Test endpoint findById with success")
+    void testFindByIdWithSuccess() {
+        UserResponse userResponse = new UserResponse(ID, NAME, EMAIL);
+
+        when(userService.findById(anyString())).thenReturn(Mono.just(User.builder().build()));
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        webTestClient.get().uri("/users/"+ ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NAME)
+                .jsonPath("$.email").isEqualTo(EMAIL);
+    }
+
+    @Test
+    @DisplayName("Test endpoint findById with not found")
+    void testFindByIdWithNotFound() {
+        when(userService.findById(anyString())).thenThrow(new ObjectNotFoundException(String.format("Object not Found. Id: %s, type: %s", ID, User.class.getSimpleName())));
+
+        webTestClient.get().uri("/users/"+ ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.path").isEqualTo("/users/"+ID)
+                .jsonPath("$.status").isEqualTo(HttpStatus.NOT_FOUND.value())
+                .jsonPath("$.error").isEqualTo("Not Found")
+                .jsonPath("$.message").isEqualTo(String.format("Object not Found. Id: %s, type: %s", ID, User.class.getSimpleName()));
     }
 
     @Test
