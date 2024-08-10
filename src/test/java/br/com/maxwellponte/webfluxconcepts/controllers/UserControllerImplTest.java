@@ -165,6 +165,30 @@ class UserControllerImplTest {
     }
 
     @Test
-    void delete() {
+    @DisplayName("Test endpoint delete with success")
+    void testDeleteWithSuccess() {
+        when(userService.delete(anyString())).thenReturn(Mono.just(User.builder().build()));
+
+        webTestClient.delete().uri("/users/"+ ID)
+                .exchange()
+                .expectStatus().isOk();
+
+        Mockito.verify(userService, times(1)).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("Test endpoint delete with not found")
+    void testDeleteWithNotFound() {
+        when(userService.delete(anyString())).thenThrow(new ObjectNotFoundException(String.format("Object not Found. Id: %s, type: %s", ID, User.class.getSimpleName())));
+
+        webTestClient.delete().uri("/users/"+ ID)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.path").isEqualTo("/users/"+ID)
+                .jsonPath("$.status").isEqualTo(HttpStatus.NOT_FOUND.value())
+                .jsonPath("$.error").isEqualTo("Not Found")
+                .jsonPath("$.message").isEqualTo(String.format("Object not Found. Id: %s, type: %s", ID, User.class.getSimpleName()));
+        
     }
 }
